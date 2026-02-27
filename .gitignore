@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .env
 venv/
+
+# Yelp dataset files (too large for Git)
+data/yelp_academic_dataset_*.json
+data/yelp_sample_*.json
