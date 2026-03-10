@@ -97,18 +97,20 @@ app.get('/api/business/:businessId/reviews', async (req, res) => {
   }
 });
 
-// Get database statistics
-app.get('/api/stats', async (req, res) => {
+// Get similar review pairs
+app.get('/api/similar-reviews', async (req, res) => {
   try {
-    const totalReviews = await db.collection('reviews').countDocuments({});
+    const limit = parseInt(req.query.limit) || 10;
     
-    const avgStars = await db.collection('reviews').aggregate([
-      { $group: { _id: null, avgRating: { $avg: '$stars' } } }
-    ]).toArray();
+    const similarPairs = await db.collection('similar_reviews')
+      .find({})
+      .sort({ similarity_score: -1 })
+      .limit(limit)
+      .toArray();
     
     res.json({
-      total_reviews: totalReviews,
-      average_rating: avgStars[0]?.avgRating.toFixed(2) || 0
+      total: await db.collection('similar_reviews').countDocuments({}),
+      pairs: similarPairs
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
