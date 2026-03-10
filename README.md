@@ -64,5 +64,3 @@ Git version control initialized
 - [ ] Frontend interface
 - [ ] Integration and testing
 
-## 👤 Author
-Shreeya Nakarmi

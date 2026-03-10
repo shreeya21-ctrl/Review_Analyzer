@@ -31,7 +31,7 @@
 
 ---
 
-## Week 2-3: Data Preparation
+## Data Preparation
 - [ ] Load Yelp dataset into MongoDB
 - [ ] Create database schema for reviews
 - [ ] Create database schema for businesses
@@ -41,7 +41,7 @@
 
 ---
 
-## Week 4-5: NLP Analysis
+## NLP Analysis
 - [ ] Text preprocessing functions (tokenization, cleaning)
 - [ ] Implement TF-IDF for text similarity
 - [ ] Build sentiment analysis module
@@ -50,7 +50,7 @@
 
 ---
 
-## Week 6-7: Graph Analytics
+## Graph Analytics
 - [ ] Build reviewer-business network graph
 - [ ] Implement burst detection (many reviews in short time)
 - [ ] Detect reviewer clusters (coordinated groups)
@@ -59,7 +59,7 @@
 
 ---
 
-## Week 8-9: Credibility Scoring System
+## Credibility Scoring System
 - [ ] Combine NLP and graph metrics
 - [ ] Create weighted scoring algorithm
 - [ ] Classify reviews (trustworthy/suspicious/fake)
@@ -68,7 +68,7 @@
 
 ---
 
-## Week 10-11: Frontend Development
+## Frontend Development
 - [ ] Design UI mockups
 - [ ] Build search interface for businesses
 - [ ] Create review analysis dashboard
@@ -78,7 +78,7 @@
 
 ---
 
-## Week 12-13: Integration & Testing
+## Integration & Testing
 - [ ] Connect frontend to backend APIs
 - [ ] End-to-end testing
 - [ ] Performance optimization
@@ -87,7 +87,7 @@
 
 ---
 
-## Week 14-15: Final Polish
+## Final Polish
 - [ ] Prepare demonstration with real examples
 - [ ] Create presentation slides
 - [ ] Write final project report

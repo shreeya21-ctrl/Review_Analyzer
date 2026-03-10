@@ -62,15 +62,15 @@ if __name__ == "__main__":
     print("YELP DATASET LOADER")
     print("=" * 60 + "\n")
     
-    # Load first 1000 reviews as a test
+    # Loading first 1000 reviews
     reviews = load_yelp_reviews(reviews_file, max_reviews=1000)
     
     if reviews:
-        # Show statistics
+        # Statistics
         print(f"\nDataset Statistics:")
         print(f"Total reviews loaded: {len(reviews)}")
         
-        # Show sample review
+        # Sample review
         analyze_sample_review(reviews[0])
         
         # Save sample to file
