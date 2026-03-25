@@ -21,11 +21,7 @@ MongoClient.connect(mongoURL)
     db = client.db(dbName);
   })
   .catch(error => console.error('MongoDB connection error:', error));
-
-// ============================================================
-// ROUTES
-// ============================================================
-
+  
 // Root
 app.get('/', (req, res) => {
   res.send('Review Analyzer API is running!');
