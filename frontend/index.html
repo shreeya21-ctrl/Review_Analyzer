@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Review Detector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+
+        <header class="hero">
+            <h1>🔍 Fake Review Detection System</h1>
+            <p class="subtitle">Using NLP and Graph Analytics to Identify Suspicious Reviews</p>
+
+            <div class="search-container">
+
+                <!-- Step 1: State -->
+                <div class="filter-step">
+                    <label class="filter-label"> State</label>
+                    <select id="stateDropdown" class="search-input" onchange="onStateChange()">
+                        <option value="">-- Select a State --</option>
+                    </select>
+                </div>
+
+                <!-- Step 2: Business -->
+                <div class="filter-step" style="flex:2">
+                    <label class="filter-label">
+                        Business
+                        <span id="businessCount" class="count-badge"></span>
+                    </label>
+                    <select id="businessDropdown" class="search-input" onchange="onBusinessChange()" disabled>
+                        <option value="">-- Select a state first --</option>
+                    </select>
+                </div>
+
+                <!-- Analyze button -->
+                <div class="filter-step" style="justify-content:flex-end">
+                    <label class="filter-label" style="visibility:hidden">go</label>
+                    <button id="analyzeBtn" onclick="searchBusiness()" class="search-button" disabled>
+                        Analyze
+                    </button>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- Key Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <h3 id="totalReviews">-</h3>
+                <p>Total Reviews Analyzed</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <h3 id="avgScore">-</h3>
+                <p>Average Credibility</p>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⚠️</div>
+                <h3 id="suspiciousPercent">-</h3>
+                <p>Suspicious Reviews</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔗</div>
+                <h3 id="similarPairs">-</h3>
+                <p>Similar Pairs Found</p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" style="display:none;">
+            <div class="section">
+                <h2>📊 Analysis Results</h2>
+                <div id="analysisResults"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
