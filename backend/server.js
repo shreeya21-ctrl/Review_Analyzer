@@ -32,7 +32,7 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is working!' });
 });
 
-// ── REVIEWS ─────────────────────────────────────────────────
+// ----- REVIEWS -------------------------------------- 
 
 // Get all reviews (paginated)
 app.get('/api/reviews', async (req, res) => {
@@ -74,7 +74,7 @@ app.get('/api/business/:businessId/reviews', async (req, res) => {
   }
 });
 
-// ── BUSINESSES ───────────────────────────────────────────────
+// -----BUSINESSES -------------------------------------- 
 
 // Get top 50 businesses (legacy endpoint)
 app.get('/api/businesses', async (req, res) => {
@@ -153,7 +153,7 @@ app.get('/api/businesses/by-state', async (req, res) => {
   }
 });
 
-// ── SCORES & SUSPICIOUS ──────────────────────────────────────
+// ----- SCORES & SUSPICIOUS -------------------------------------- 
 
 // Get credibility scores
 app.get('/api/credibility-scores', async (req, res) => {
@@ -236,7 +236,7 @@ app.get('/api/suspicious-reviews', async (req, res) => {
   }
 });
 
-// ── MAIN ANALYSIS ENGINE ─────────────────────────────────────
+// ----- MAIN ANALYSIS ENGINE -------------------------------------- 
 
 app.get('/api/business/:businessId/analyze', async (req, res) => {
   try {
@@ -252,9 +252,23 @@ app.get('/api/business/:businessId/analyze', async (req, res) => {
 
     const totalReviews = reviews.length;
     const flags = [];
-    let credibilityScore = 100;
+    const rewards = [];
+    const baseCredibilityScore = 100;
+    const maxRewardPoints = 0;
+    let credibilityScore = baseCredibilityScore;
+    let pointsEarnedBack = 0;
 
-    // ── 1. RATING DISTRIBUTION ──────────────────────────────
+    function addReward(type, points, message) {
+      const availableRewardPoints = maxRewardPoints - pointsEarnedBack;
+      const appliedPoints = Math.min(points, availableRewardPoints);
+
+      if (appliedPoints <= 0) return;
+
+      pointsEarnedBack += appliedPoints;
+      rewards.push({ type, points: appliedPoints, message });
+    }
+
+    // ----- 1. RATING DISTRIBUTION --------------------------------------
     const starCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     reviews.forEach(r => { if (r.stars) starCounts[r.stars]++; });
     const extremeCount = starCounts[1] + starCounts[5];
@@ -262,14 +276,14 @@ app.get('/api/business/:businessId/analyze', async (req, res) => {
     const avgRating = (reviews.reduce((sum, r) => sum + (r.stars || 0), 0) / totalReviews).toFixed(2);
 
     if (extremePercent > 80) {
-      credibilityScore -= 25;
-      flags.push({ type: 'extreme_ratings', severity: 'high', message: `${extremePercent}% of reviews are 1-star or 5-star only` });
+      credibilityScore -= 10;
+      flags.push({ type: 'extreme_ratings', severity: 'high', points: -10, message: `${extremePercent}% of reviews are 1-star or 5-star only` });
     } else if (extremePercent > 60) {
-      credibilityScore -= 12;
-      flags.push({ type: 'extreme_ratings', severity: 'medium', message: `${extremePercent}% of reviews are 1-star or 5-star only` });
+      credibilityScore -= 7;
+      flags.push({ type: 'extreme_ratings', severity: 'medium', points: -7, message: `${extremePercent}% of reviews are 1-star or 5-star only` });
     }
 
-    // ── 2. REVIEW BURST DETECTION ───────────────────────────
+    // ----- 2. REVIEW BURST DETECTION -------------------------------------- 
     const reviewsByDate = {};
     reviews.forEach(r => {
       if (r.date) {
@@ -283,14 +297,16 @@ app.get('/api/business/:businessId/analyze', async (req, res) => {
     const burstThreshold = Math.max(5, totalReviews * 0.15);
 
     if (maxInOneDay >= burstThreshold) {
-      credibilityScore -= 20;
-      flags.push({ type: 'review_burst', severity: 'high', message: `${maxInOneDay} reviews posted in a single day (suspicious burst)` });
+      credibilityScore -= 14;
+      flags.push({ type: 'review_burst', severity: 'high', points: -14, message: `${maxInOneDay} reviews posted in a single day (suspicious burst)` });
     } else if (maxInOneDay >= 3) {
       credibilityScore -= 8;
-      flags.push({ type: 'review_burst', severity: 'low', message: `${maxInOneDay} reviews posted on same day` });
+      flags.push({ type: 'review_burst', severity: 'low', points: -8, message: `${maxInOneDay} reviews posted on same day` });
+    } else {
+      addReward('steady_review_flow', 1, `Review activity is steady with no suspicious daily burst`);
     }
 
-    // ── 3. NEAR-DUPLICATE TEXT DETECTION ────────────────────
+    // ----- 3. NEAR-DUPLICATE TEXT DETECTION --------------------------------------
     function tokenize(text) {
       return new Set((text || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2));
     }
@@ -330,14 +346,16 @@ app.get('/api/business/:businessId/analyze', async (req, res) => {
     }
 
     if (nearDuplicatePairs.length > 5) {
-      credibilityScore -= 25;
-      flags.push({ type: 'near_duplicates', severity: 'high', message: `${nearDuplicatePairs.length} near-duplicate review pairs detected (≥75% similar)` });
+      credibilityScore -= 15;
+      flags.push({ type: 'near_duplicates', severity: 'high', points: -15, message: `${nearDuplicatePairs.length} near-duplicate review pairs detected (≥75% similar)` });
     } else if (nearDuplicatePairs.length > 1) {
       credibilityScore -= 10;
-      flags.push({ type: 'near_duplicates', severity: 'medium', message: `${nearDuplicatePairs.length} near-duplicate review pairs detected` });
+      flags.push({ type: 'near_duplicates', severity: 'medium', points: -10, message: `${nearDuplicatePairs.length} near-duplicate review pairs detected` });
+    } else {
+      addReward('original_review_text', 1, `Reviews appear mostly unique with little duplicated text`);
     }
 
-    // ── 4. REPEAT REVIEWER DETECTION ────────────────────────
+    // ----- 4. REPEAT REVIEWER DETECTION --------------------------------------
     const reviewerCounts = {};
     reviews.forEach(r => {
       if (r.user_id) reviewerCounts[r.user_id] = (reviewerCounts[r.user_id] || 0) + 1;
@@ -345,47 +363,52 @@ app.get('/api/business/:businessId/analyze', async (req, res) => {
     const repeatReviewers = Object.entries(reviewerCounts).filter(([, count]) => count > 1);
 
     if (repeatReviewers.length > 0) {
-      credibilityScore -= 15;
-      flags.push({ type: 'repeat_reviewers', severity: 'high', message: `${repeatReviewers.length} user(s) reviewed this business more than once` });
+      credibilityScore -= 8;
+      flags.push({ type: 'repeat_reviewers', severity: 'high', points: -8, message: `${repeatReviewers.length} user(s) reviewed this business more than once` });
+    } else {
+      addReward('unique_reviewers', 1, `No repeat reviewers were detected for this business`);
     }
 
-    // ── 5. LOW-EFFORT REVIEW DETECTION ──────────────────────
+    // ----- 5. LOW-EFFORT REVIEW DETECTION --------------------------------------
     const shortReviews = reviews.filter(r => (r.text || '').trim().split(/\s+/).length < 5);
     const shortPercent = ((shortReviews.length / totalReviews) * 100).toFixed(1);
 
     if (shortPercent > 40) {
-      credibilityScore -= 10;
-      flags.push({ type: 'low_effort', severity: 'medium', message: `${shortPercent}% of reviews are very short (under 5 words)` });
+      credibilityScore -= 8;
+      flags.push({ type: 'low_effort', severity: 'medium', points: -8, message: `${shortPercent}% of reviews are very short (under 5 words)` });
     }
 
-    // ── 6. RECENCY SPIKE ─────────────────────────────────────
+    // ----- 6. RECENCY SPIKE-------------------------------------- 
     const sortedDates = Object.entries(reviewsByDate).sort(([a], [b]) => new Date(b) - new Date(a));
 
     if (sortedDates.length >= 2) {
       const recentCount = sortedDates.slice(0, 3).reduce((sum, [, c]) => sum + c, 0);
       const olderCount = sortedDates.slice(3).reduce((sum, [, c]) => sum + c, 0);
       if (olderCount > 0 && recentCount / olderCount > 3) {
-        credibilityScore -= 10;
-        flags.push({ type: 'recency_spike', severity: 'medium', message: `Unusual spike in recent reviews compared to historical average` });
+        credibilityScore -= 8;
+        flags.push({ type: 'recency_spike', severity: 'medium', points: -8, message: `Unusual spike in recent reviews compared to historical average` });
       }
     }
 
-    // ── FINAL SCORE ──────────────────────────────────────────
+    // ----- FINAL SCORE -------------------------------------- 
+    credibilityScore += pointsEarnedBack;
     credibilityScore = Math.max(0, Math.min(100, credibilityScore));
 
     const verdict =
-      credibilityScore >= 80 ? 'LIKELY AUTHENTIC' :
-      credibilityScore >= 60 ? 'SUSPICIOUS' : 'LIKELY FAKE';
+      credibilityScore >= 90 ? 'LIKELY AUTHENTIC' :
+      credibilityScore >= 75 ? 'NEEDS REVIEW' : 'HIGH RISK';
 
     res.json({
       business_id: businessId,
       total_reviews: totalReviews,
       avg_rating: parseFloat(avgRating),
       credibility_score: credibilityScore,
+      points_earned_back: pointsEarnedBack,
       verdict,
       star_distribution: starCounts,
       extreme_rating_percent: parseFloat(extremePercent),
       flags,
+      rewards,
       near_duplicate_pairs: nearDuplicatePairs.slice(0, 5),
       daily_review_counts: reviewsByDate,
       max_reviews_in_one_day: maxInOneDay,
