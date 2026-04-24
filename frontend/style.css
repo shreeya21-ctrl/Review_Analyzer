@@ -114,18 +114,25 @@ h1 {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
+    transition: background 0.2s, transform 0.15s, opacity 0.2s;
     letter-spacing: 0.3px;
     font-family: inherit;
 }
 
-.search-button:hover {
+.search-button:hover:not(:disabled) {
     background: #6a57e8;
     transform: translateY(-1px);
 }
 
-.search-button:active {
+.search-button:active:not(:disabled) {
     transform: translateY(0);
+}
+
+/* FIX: style the disabled state clearly */
+.search-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* STATS GRID */
@@ -173,7 +180,7 @@ h1 {
     margin-bottom: 10px;
 }
 
-/* ── SECTION ── */
+/* SECTION */
 .section {
     background: #16161e;
     padding: 30px;
@@ -191,7 +198,7 @@ h1 {
     border-bottom: 1px solid #2a2a38;
 }
 
-/*  HOMEPAGE VISUALS */
+/* HOMEPAGE VISUALS */
 .visuals-section {
     margin-bottom: 24px;
 }
@@ -283,9 +290,11 @@ h1 {
 .business-score.good     { color: #5cb85c; }
 
 /* BUSINESS STATS */
+/* FIX: was repeat(3, 1fr) which left the 7th item alone in a row.
+   auto-fit wraps gracefully at any viewport width. */
 .business-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 12px;
     margin-bottom: 24px;
 }
@@ -312,7 +321,7 @@ h1 {
     letter-spacing: 0.4px;
 }
 
-/* SECTION BLOCKS  */
+/* SECTION BLOCKS */
 .section-block {
     margin-top: 24px;
     padding-top: 20px;
@@ -327,7 +336,7 @@ h1 {
     letter-spacing: 0.2px;
 }
 
-/* FLAGS  */
+/* FLAGS */
 .flags-list {
     display: flex;
     flex-direction: column;
@@ -351,6 +360,10 @@ h1 {
     color: #5cb85c;
 }
 
+.reward-item {
+    background: rgba(92, 184, 92, 0.08);
+}
+
 .flag-severity {
     margin-left: auto;
     padding: 2px 10px;
@@ -360,6 +373,10 @@ h1 {
     color: white;
     letter-spacing: 0.5px;
     white-space: nowrap;
+}
+
+.reward-severity {
+    color: #fff;
 }
 
 /* STAR DISTRIBUTION */
@@ -409,7 +426,7 @@ h1 {
     font-size: 0.9em;
 }
 
-/* ── NEAR DUPLICATES ── */
+/* NEAR DUPLICATES */
 .dup-pair {
     background: #1e1e28;
     border-radius: 8px;
@@ -453,13 +470,13 @@ h1 {
     font-style: italic;
 }
 
-/* MOBILE*/
+/* MOBILE */
 @media (max-width: 768px) {
     header { padding: 30px 20px; }
     h1 { font-size: 1.7em; }
     .search-container { flex-direction: column; }
     .search-button { width: 100%; }
-    .business-stats { grid-template-columns: 1fr 1fr; }
+    .business-stats { grid-template-columns: repeat(2, 1fr); }
     .business-header { flex-direction: column; gap: 16px; }
     .dup-texts { grid-template-columns: 1fr; }
     .stat-card h3 { font-size: 1.8em; }
