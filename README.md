@@ -1,6 +1,6 @@
-# Product Review Analyzer
+# Fake Review Detection System
 
-Multi-platform review analysis using NLP and Graph Analytics
+Using NLP and Graph Analytics to Identify Suspicious Reviews
 
 ## Project Goal
 Identify fake and misleading product reviews across multiple platforms using Natural Language Processing and Graph-based analysis.
